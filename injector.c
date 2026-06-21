@@ -35,6 +35,7 @@ const size_t g_shellcode_bin_len = sizeof(g_shellcode_bin);
 
 // TODO: find this path dynamically using /proc/PID/maps
 #define LIBC_SO_PATH "/usr/lib/x86_64-linux-gnu/libc.so.6"
+#define LIBC_KEYWORD "libc.so"
 
 char *g_so_path = NULL;
 
@@ -120,7 +121,7 @@ uintptr_t remote_libc_start_address(state_t *tracee)
             perror("");
             goto cleanup;
         }
-        if (strstr(line, LIBC_SO_PATH))
+        if (strstr(line, LIBC_KEYWORD))
         {
             // 7020cda00000-7020cda28000 r--p 00000000 103:05 661671 /usr/lib/x86_64-linux-gnu/libc.so.6
             sep = strchr(line, '-');
