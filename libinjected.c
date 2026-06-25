@@ -10,6 +10,7 @@ gcc -shared -fPIC libinjected.c modules/modules.c modules/socket.c -o libinjecte
 
 #include "libinjected.h"
 #include "modules/modules.h"
+#include "utils.h"
 
 #define MAIN_LOOP_INTERVAL 50000
 
@@ -43,16 +44,16 @@ void tool_main_loop(int sig)
 
 void tool_init()
 {
-    printf("[INJECTED] Shared object loaded successfully!\n");
+    DEBUG_PRINT("[INJECTED] Shared object loaded successfully!\n");
 
     /* init modules */
-    printf("g_num = %d\n", g_num);
+    DEBUG_PRINT("g_num = %d\n", g_num);
     for (int i = 0; i < g_num; i++)
     {
         g_modules[i]->id = i;
         g_modules[i]->is_loaded = !g_modules[i]->ops.init();
     }
-    puts("[MODULE] Done all modules init");
+    DEBUG_PRINT("[MODULE] Done all modules init\n");
 
     /* setup repetitive calls to main_loop */
     signal(SIGALRM, tool_main_loop);
@@ -68,6 +69,6 @@ void tool_destroy()
         {
             ret = g_modules[i]->ops.destroy();
         }
-        printf("module %d unloaded with exit code %d\n", g_modules[i]->id, ret);
+        DEBUG_PRINT("module %d unloaded with exit code %d\n", g_modules[i]->id, ret);
     }
 }

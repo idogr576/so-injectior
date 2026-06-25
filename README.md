@@ -3,8 +3,11 @@ This Project implements a simple Shared-Object injector in linux,
 using the `ptrace` mechanism.
 
 # Build
+All of the following are allowed:
 ```bash
-./build.sh
+make
+make debug
+make clean
 ```
 
 # Run

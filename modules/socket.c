@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 
 #include "socket.h"
+#include "../utils.h"
 
 #define LISTEN_BACKLOG 50
 
@@ -23,7 +24,7 @@ int socket_init()
     }
     struct sockaddr_in addr = {.sin_family = AF_INET, .sin_port = htons(PORTNUM), .sin_addr = INADDR_ANY};
     bind(g_socket, (struct sockaddr *)&addr, sizeof(addr));
-    puts("[MODULE] Done socket module init");
+    DEBUG_PRINT("[MODULE] Done socket module init\n");
     return 0;
 }
 
@@ -38,13 +39,13 @@ int socket_iterate()
     {
         return 1;
     }
-    printf("received %ld bytes: %s\n", bytes, buff);
+    PRINT("received %ld bytes: %s\n", bytes, buff);
     return 0;
 }
 
 int socket_destroy()
 {
     close(g_socket);
-    puts("[FIN] socket module");
+    DEBUG_PRINT("[FIN] socket module\n");
     return 0;
 }

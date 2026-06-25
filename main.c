@@ -11,12 +11,13 @@
 #include <signal.h>
 
 #include "injector.h"
+#include "utils.h"
 
 int main(int argc, char *argv[])
 {
     if (argc != 3)
     {
-        printf("Usage: %s <PID> <SO Path>\n", argv[0]);
+        PRINT("Usage: %s <PID> <SO Path>\n", argv[0]);
         return 1;
     }
     pid_t pid = atoi(argv[1]);
@@ -33,42 +34,42 @@ int main(int argc, char *argv[])
     fp = fopen(cmdlinePath, "r");
     if (!fp)
     {
-        printf("could not open file: %s\n", cmdlinePath);
+        PRINT("could not open file: %s\n", cmdlinePath);
         goto cleanup;
     }
     fread(cmdline, 1, sizeof(cmdline), fp);
-    printf("Intercepting PID %d: %s\n", pid, cmdline);
+    PRINT("Intercepting PID %d: %s\n", pid, cmdline);
 
     state_t remote_state = {.pid = pid, .n = g_shellcode_bin_len};
     state_t *pstate = &remote_state;
 
     if (remote_attach_process(pstate))
     {
-        printf("cannot attach to remote process\n");
+        PRINT("cannot attach to remote process\n");
         goto cleanup;
     }
     time_t start_time = time(NULL);
 
     uintptr_t p = remote_libc_start_address(pstate);
-    printf("libc start address is %#lx\n", p);
+    DEBUG_PRINT("libc start address is %#lx\n", p);
 
     remote_state_preserve(pstate);
-    printf("stopped remote process at %#llx\n", remote_state.regs.rip);
+    DEBUG_PRINT("stopped remote process at %#llx\n", remote_state.regs.rip);
 
     remote_alloc_args_on_stack(pstate);
 
-    printf("using resolved addresses to build a shellcode\n");
+    DEBUG_PRINT("using resolved addresses to build a shellcode\n");
     construct_shellcode(pstate);
 
     remote_write_shellcode(pstate);
 
     remote_run_shellcode(pstate);
-    printf("state restored... detaching\n");
+    DEBUG_PRINT("state restored... detaching\n");
 
     ptrace(PTRACE_DETACH, pid, 0, 0);
 
     time_t end_time = time(NULL);
-    printf("remote process was stopped for %ld seconds in total\n", end_time - start_time);
+    DEBUG_PRINT("remote process was stopped for %ld seconds in total\n", end_time - start_time);
 
 cleanup:
     if (fp)
